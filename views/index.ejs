@@ -1,0 +1,453 @@
+<% layout('boilerplate.ejs') %>
+
+<div class="hero-section">
+    <h1 class="hero-title">Developer Profiles</h1>
+    <p class="hero-subtitle">Analyze, score, and track elite GitHub developers with AI-powered insights.</p>
+    <p class="hero-credit">
+        <i class="fa-solid fa-code"></i> Crafted by <strong>Akhilesh Lonkar</strong>
+    </p>
+    <div class="hero-buttons">
+        <a href="/profile/new" class="btn-primary-gradient">
+            <i class="fa-solid fa-plus"></i> Analyze Profile <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <a href="/" class="btn-home">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+    </div>
+</div>
+
+<!-- Search Results Info -->
+<% if (search) { %>
+    <div class="search-results-info">
+        <p>Found <strong><%= profiles.length %></strong> result<%= profiles.length !== 1 ? 's' : '' %> for "<strong><%= search %></strong>"</p>
+        <a href="/profile" class="btn btn-sm btn-outline-secondary">Clear Search</a>
+    </div>
+<% } %>
+
+<% if (profiles.length === 0) { %>
+    <div class="empty-state">
+        <i class="fa-brands fa-github fa-3x"></i>
+        <h4>No profiles analyzed yet</h4>
+        <p>Enter a GitHub username to start analyzing developer portfolios.</p>
+        <a href="/profile/new" class="btn btn-dark">Get Started</a>
+    </div>
+<% } %>
+
+<!-- Filter Panel -->
+<div class="filter-panel">
+    <div class="filter-header">
+        <h3><i class="fa-solid fa-filter"></i> Filters</h3>
+        <button class="btn btn-sm btn-outline-secondary" id="toggleFilters">
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+    </div>
+    
+    <div class="filter-content" id="filterContent">
+        <form method="GET" action="/profile" class="filter-form">
+            <% if (search) { %>
+                <input type="hidden" name="search" value="<%= search %>">
+            <% } %>
+            
+            <div class="filter-row">
+                <!-- Profile Type -->
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-users"></i> Profile Type</label>
+                    <select name="profileType" class="filter-select">
+                        <option value="all" <%= filters.profileType === 'all' ? 'selected' : '' %>>All Types</option>
+                        <option value="individual" <%= filters.profileType === 'individual' ? 'selected' : '' %>>Individual</option>
+                        <option value="company" <%= filters.profileType === 'company' ? 'selected' : '' %>>Company</option>
+                    </select>
+                </div>
+
+                <!-- Language -->
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-code"></i> Language</label>
+                    <select name="language" class="filter-select">
+                        <option value="">All Languages</option>
+                        <% for (let lang of languages) { %>
+                            <option value="<%= lang %>" <%= filters.language === lang ? 'selected' : '' %>><%= lang %></option>
+                        <% } %>
+                    </select>
+                </div>
+
+                <!-- AI Level -->
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-award"></i> AI Level</label>
+                    <select name="aiLevel" class="filter-select">
+                        <option value="all" <%= filters.aiLevel === 'all' ? 'selected' : '' %>>All Levels</option>
+                        <option value="beginner" <%= filters.aiLevel === 'beginner' ? 'selected' : '' %>>Beginner</option>
+                        <option value="intermediate" <%= filters.aiLevel === 'intermediate' ? 'selected' : '' %>>Intermediate</option>
+                        <option value="advanced" <%= filters.aiLevel === 'advanced' ? 'selected' : '' %>>Advanced</option>
+                        <option value="expert" <%= filters.aiLevel === 'expert' ? 'selected' : '' %>>Expert</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary-gradient btn-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i> Apply Filters
+                </button>
+                <a href="/profile" class="btn btn-outline-dark btn-sm">
+                    <i class="fa-solid fa-xmark"></i> Clear All
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="search-wrapper">
+    <input 
+        type="text" 
+        id="searchInput" 
+        class="search-input" 
+        placeholder="Search by username, language, skill, or repo..."
+        value="<%= typeof search !== 'undefined' ? search : '' %>"
+        autocomplete="off"
+    >
+    <div id="suggestions" class="suggestions-dropdown"></div>
+</div>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const suggestionsDiv = document.getElementById('suggestions');
+let debounceTimer;
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const query = this.value.trim();
+    
+    if (query.length < 1) {
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+    
+    debounceTimer = setTimeout(() => {
+        fetch(`/api/search-suggestions?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.suggestions.length === 0) {
+                    suggestionsDiv.innerHTML = '';
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+                
+                let html = '';
+                data.suggestions.forEach(suggestion => {
+                    let icon = '';
+                    let color = '';
+                    
+                    switch(suggestion.type) {
+                        case 'user':
+                            icon = '<i class="fa-solid fa-user"></i>';
+                            color = '#2da44e';
+                            break;
+                        case 'language':
+                            icon = '<i class="fa-solid fa-code"></i>';
+                            color = '#0969da';
+                            break;
+                        case 'skill':
+                            icon = '<i class="fa-solid fa-tag"></i>';
+                            color = '#9a6700';
+                            break;
+                        case 'repo':
+                            icon = '<i class="fa-solid fa-book"></i>';
+                            color = '#8250df';
+                            break;
+                    }
+                    
+                    html += `<div class="suggestion-item" data-value="${suggestion.text}">
+                        <span style="color: ${color}">${icon}</span>
+                        <span>${suggestion.text}</span>
+                        <span class="suggestion-type">${suggestion.type}</span>
+                    </div>`;
+                });
+                
+                suggestionsDiv.innerHTML = html;
+                suggestionsDiv.style.display = 'block';
+            });
+    }, 200);
+});
+
+// Handle suggestion click
+suggestionsDiv.addEventListener('click', function(e) {
+    const item = e.target.closest('.suggestion-item');
+    if (item) {
+        const value = item.dataset.value;
+        searchInput.value = value;
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        
+        // Trigger search
+        window.location.href = `/profile?search=${encodeURIComponent(value)}`;
+    }
+});
+
+// Hide suggestions when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-wrapper')) {
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+    }
+});
+
+// Handle Enter key
+searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const query = this.value.trim();
+        if (query) {
+            window.location.href = `/profile?search=${encodeURIComponent(query)}`;
+        }
+    }
+});
+
+</script>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="profile-grid">
+    <% for (let p of profiles) { %>
+    <div class="profile-card" 
+         data-score="<%= p.contributionScore || 0 %>" 
+         data-stars="<%= p.totalStars || 0 %>" 
+         data-ai-score="<%= p.aiCodeQuality && p.aiCodeQuality.overallScore ? p.aiCodeQuality.overallScore : 0 %>"
+         data-ai-level="<%= p.aiOverallLevel || '' %>"
+         data-language="<%= p.topLanguages && p.topLanguages.length > 0 ? p.topLanguages[0] : '' %>"
+         data-date="<%= p.analyzedAt ? new Date(p.analyzedAt).getTime() : 0 %>">
+        <div class="profile-card-header">
+            <img src="<%= p.avatar %>" alt="<%= p.username %>" class="avatar">
+            <div>
+                <h5>
+                    <%= p.username %>
+                    <% if (p.profileType === 'company') { %>
+                        <span class="profile-type-badge company">
+                            <i class="fa-solid fa-building"></i>
+                        </span>
+                    <% } else { %>
+                        <span class="profile-type-badge individual">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                    <% } %>
+                </h5>
+                <p class="profile-bio"><%= p.bio ? p.bio.substring(0, 60) + '...' : 'No bio' %></p>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat">
+                <span class="stat-value"><%= p.publicRepos %></span>
+                <span class="stat-label">Repos</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value"><%= p.totalStars %></span>
+                <span class="stat-label">Stars</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value"><%= p.followers %></span>
+                <span class="stat-label">Followers</span>
+            </div>
+        </div>
+
+        <div class="score-badges-row">
+            <div class="score-badge">
+                Score: <%= p.contributionScore %>/100
+            </div>
+
+            <button type="button" class="btn-ai-predict-small" data-profile-id="<%= p._id %>" onclick="predictAI(this, '<%= p._id %>')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+        </div>
+
+        <% if (p.aiCodeQuality && p.aiCodeQuality.overallScore) { %>
+        <div class="ai-score-badge">
+            <i class="fa-solid fa-robot"></i> AI Score: <%= p.aiCodeQuality.overallScore %>/10
+        </div>
+        <% } %>
+
+        <% if (p.aiOverallLevel) { %>
+        <div class="ai-level-badge-small">
+            <i class="fa-solid fa-award"></i> <%= p.aiOverallLevel %>
+        </div>
+        <% } %>
+
+        <% if (p.topLanguages && p.topLanguages.length > 0) { %>
+        <div class="card-languages">
+            <% for (let lang of p.topLanguages.slice(0, 3)) { %>
+                <span class="lang-badge"><i class="fa-solid fa-code"></i> <%= lang %></span>
+            <% } %>
+        </div>
+        <% } %>
+
+        <% if (p.tags && p.tags.length > 0) { %>
+        <div class="card-tags">
+            <% for (let tag of p.tags.slice(0, 3)) { %>
+                <span class="tag-badge"><%= tag %></span>
+            <% } %>
+        </div>
+        <% } %>
+
+        <div class="profile-card-actions">
+            <a href="/profile/show/<%= p._id %>" class="btn btn-sm btn-outline-dark">View Details</a>
+            <a href="/profile/refresh/<%= p._id %>" class="btn btn-sm btn-outline-primary">
+                <i class="fa-solid fa-rotate"></i>
+            </a>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<script>
+// AI Predict function
+async function predictAI(btn, profileId) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    
+    try {
+        const res = await fetch(`/api/ai-analyze/${profileId}`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (data.success) {
+            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            btn.style.background = 'linear-gradient(135deg, #2da44e, #2ea043)';
+            btn.style.color = '#fff';
+            
+            // Update AI score badge if it exists, otherwise add one
+            const card = btn.closest('.profile-card');
+            let aiBadge = card.querySelector('.ai-score-badge');
+            if (!aiBadge) {
+                aiBadge = document.createElement('div');
+                aiBadge.className = 'ai-score-badge';
+                const badgesRow = card.querySelector('.score-badges-row');
+                badgesRow.after(aiBadge);
+            }
+            aiBadge.innerHTML = `<i class="fa-solid fa-robot"></i> AI Score: ${data.aiScore}/10`;
+            
+            // Update AI level badge
+            let levelBadge = card.querySelector('.ai-level-badge-small');
+            if (!levelBadge) {
+                levelBadge = document.createElement('div');
+                levelBadge.className = 'ai-level-badge-small';
+                aiBadge.after(levelBadge);
+            }
+            levelBadge.innerHTML = `<i class="fa-solid fa-award"></i> ${data.aiLevel}`;
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+                btn.disabled = false;
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+                btn.disabled = false;
+            }, 2000);
+        }
+    } catch (err) {
+        btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+            btn.disabled = false;
+        }, 2000);
+    }
+}
+
+// Filter panel toggle
+const toggleBtn = document.getElementById('toggleFilters');
+const filterContent = document.getElementById('filterContent');
+
+if (toggleBtn && filterContent) {
+    toggleBtn.addEventListener('click', function() {
+        filterContent.classList.toggle('collapsed');
+        this.querySelector('i').classList.toggle('fa-chevron-down');
+        this.querySelector('i').classList.toggle('fa-chevron-up');
+    });
+}
+
+// Filter tabs functionality
+const filterTabs = document.querySelectorAll('.filter-tab');
+const profileCards = document.querySelectorAll('.profile-card');
+
+filterTabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Update active tab
+        filterTabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        const filter = this.dataset.filter;
+        
+        let visibleCount = 0;
+        
+        profileCards.forEach(card => {
+            const score = parseInt(card.dataset.score) || 0;
+            const stars = parseInt(card.dataset.stars) || 0;
+            const aiScore = parseInt(card.dataset.aiScore) || 0;
+            const aiLevel = card.dataset.aiLevel || '';
+            const language = card.dataset.language || '';
+            const date = parseInt(card.dataset.date) || 0;
+            
+            let show = false;
+            
+            switch(filter) {
+                case 'all':
+                    show = true;
+                    break;
+                case 'expert':
+                    // Expert: has AI analysis or decent score
+                    show = aiScore > 0 || score >= 50;
+                    break;
+                case 'topstars':
+                    // Top Stars: any profile with stars
+                    show = stars > 0;
+                    break;
+                case 'trending':
+                    // Trending: recently analyzed (last 30 days)
+                    const monthAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+                    show = date >= monthAgo;
+                    break;
+                case 'ai-analyzed':
+                    // Has AI analysis
+                    show = aiLevel !== '';
+                    break;
+                case 'javascript':
+                    show = language.toLowerCase().includes('javascript');
+                    break;
+                case 'python':
+                    show = language.toLowerCase().includes('python');
+                    break;
+            }
+            
+            if (show) {
+                card.style.display = 'block';
+                card.style.animation = 'fadeIn 0.3s ease';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResults = document.getElementById('noResults');
+        if (visibleCount === 0 && profileCards.length > 0) {
+            if (!noResults) {
+                const msg = document.createElement('div');
+                msg.id = 'noResults';
+                msg.className = 'empty-state';
+                msg.innerHTML = '<i class="fa-solid fa-filter fa-3x"></i><h4>No profiles match this filter</h4><p>Try a different filter or analyze more profiles.</p>';
+                document.querySelector('.profile-grid').after(msg);
+            } else {
+                noResults.style.display = 'block';
+            }
+        } else if (noResults) {
+            noResults.style.display = 'none';
+        }
+    });
+});
+</script>

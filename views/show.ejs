@@ -1,0 +1,297 @@
+<% layout('boilerplate.ejs') %>
+
+<div class="profile-details">
+    <!-- Navigation Buttons -->
+    <div class="detail-nav-buttons">
+        <a href="/" class="btn-detail-nav">
+            <i class="fa-solid fa-house"></i> Home
+        </a>
+        <a href="/profile" class="btn-detail-nav">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Profile Header -->
+    <div class="profile-header-card">
+        <img src="<%= profile.avatar %>" alt="<%= profile.username %>" class="profile-avatar">
+        <div class="profile-info">
+            <h2><%= profile.username %></h2>
+            <p class="bio"><%= profile.bio || 'No bio available' %></p>
+            <a href="<%= profile.profileUrl %>" target="_blank" class="btn btn-sm btn-outline-dark">
+                <i class="fa-brands fa-github"></i> View on GitHub
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <i class="fa-solid fa-code-branch"></i>
+            <div class="stat-number"><%= profile.publicRepos %></div>
+            <div class="stat-title">Public Repos</div>
+        </div>
+        <div class="stat-card">
+            <i class="fa-solid fa-star"></i>
+            <div class="stat-number"><%= profile.totalStars %></div>
+            <div class="stat-title">Total Stars</div>
+        </div>
+        <div class="stat-card">
+            <i class="fa-solid fa-code-fork"></i>
+            <div class="stat-number"><%= profile.totalForks %></div>
+            <div class="stat-title">Total Forks</div>
+        </div>
+        <div class="stat-card">
+            <i class="fa-solid fa-users"></i>
+            <div class="stat-number"><%= profile.followers %></div>
+            <div class="stat-title">Followers</div>
+        </div>
+        <div class="stat-card">
+            <i class="fa-solid fa-user-plus"></i>
+            <div class="stat-number"><%= profile.following %></div>
+            <div class="stat-title">Following</div>
+        </div>
+        <div class="stat-card score-card">
+            <i class="fa-solid fa-chart-line"></i>
+            <div class="stat-number"><%= profile.contributionScore %></div>
+            <div class="stat-title">Score / 100</div>
+        </div>
+    </div>
+
+    <!-- Top Languages -->
+    <div class="section-card">
+        <h4><i class="fa-solid fa-language"></i> Top Languages</h4>
+        <div class="language-tags">
+            <% if (profile.topLanguages && profile.topLanguages.length > 0) { %>
+                <% for (let lang of profile.topLanguages) { %>
+                    <span class="lang-tag"><%= lang %></span>
+                <% } %>
+            <% } else { %>
+                <p class="text-muted">No language data available</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Top Repos -->
+    <div class="section-card">
+        <h4><i class="fa-solid fa-trophy"></i> Top Repositories</h4>
+        <div class="repo-list">
+            <% if (profile.topRepos && profile.topRepos.length > 0) { %>
+                <% for (let repo of profile.topRepos) { %>
+                <div class="repo-item">
+                    <a href="<%= repo.url %>" target="_blank"><%= repo.name %></a>
+                    <div class="repo-meta">
+                        <span><i class="fa-solid fa-star"></i> <%= repo.stars %></span>
+                        <span><i class="fa-solid fa-code"></i> <%= repo.language %></span>
+                    </div>
+                </div>
+                <% } %>
+            <% } else { %>
+                <p class="text-muted">No repositories found</p>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Tags & Notes -->
+    <% if ((profile.tags && profile.tags.length > 0) || profile.notes) { %>
+    <div class="section-card">
+        <h4><i class="fa-solid fa-tags"></i> Tags & Notes</h4>
+        <div class="tag-list">
+            <% if (profile.tags) { %>
+                <% for (let tag of profile.tags) { %>
+                    <span class="badge bg-secondary"><%= tag %></span>
+                <% } %>
+            <% } %>
+        </div>
+        <% if (profile.notes) { %>
+            <p class="notes"><%= profile.notes %></p>
+        <% } %>
+    </div>
+    <% } %>
+
+    <!-- Actions -->
+    <div class="action-row">
+        <a href="/profile/edit/<%= profile._id %>" class="btn btn-outline-primary">
+            <i class="fa-solid fa-pen"></i> Edit Tags & Notes
+        </a>
+        <a href="/profile/refresh/<%= profile._id %>" class="btn btn-outline-success">
+            <i class="fa-solid fa-rotate"></i> Refresh Data
+        </a>
+        <form action="/profile/<%= profile._id %>/ai-analyze" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-outline-info" onclick="this.disabled=true; this.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> Analyzing...'; this.form.submit();">
+                <i class="fa-solid fa-robot"></i> Analyze with AI
+            </button>
+        </form>
+        <a href="/profile/delete/<%= profile._id %>" class="btn btn-outline-danger"
+           onclick="return confirm('Delete this profile?')">
+            <i class="fa-solid fa-trash"></i> Delete
+        </a>
+    </div>
+</div>
+
+<!-- AI Analysis Section -->
+<% if (profile.aiSummary || profile.aiSkills && profile.aiSkills.length > 0) { %>
+<hr class="my-4">
+<div class="ai-section">
+    <h4><i class="fa-solid fa-robot"></i> AI Analysis</h4>
+    <% if (profile.aiAnalyzedAt) { %>
+        <small class="text-muted">Analyzed on <%= new Date(profile.aiAnalyzedAt).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></small>
+    <% } %>
+
+    <!-- AI Summary -->
+    <% if (profile.aiSummary) { %>
+    <div class="section-card ai-card">
+        <h5><i class="fa-solid fa-comment-dots"></i> Profile Summary</h5>
+        <p class="ai-summary"><%= profile.aiSummary %></p>
+    </div>
+    <% } %>
+
+    <!-- AI Skills Assessment -->
+    <% if (profile.aiSkills && profile.aiSkills.length > 0) { %>
+    <div class="section-card ai-card">
+        <h5><i class="fa-solid fa-code"></i> Skills Assessment</h5>
+        <% if (profile.aiOverallLevel) { %>
+            <span class="ai-level-badge"><%= profile.aiOverallLevel %></span>
+        <% } %>
+        <div class="skills-list">
+            <% for (let skill of profile.aiSkills) { %>
+            <div class="skill-item">
+                <div class="skill-header">
+                    <span class="skill-name"><%= skill.name %></span>
+                    <span class="skill-rating"><%= skill.rating %>/10</span>
+                </div>
+                <div class="skill-bar">
+                    <div class="skill-bar-fill" style="width: <%= skill.rating * 10 %>%"></div>
+                </div>
+                <% if (skill.justification) { %>
+                    <small class="skill-justification"><%= skill.justification %></small>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- AI Recommendations -->
+    <% if (profile.aiRecommendations && profile.aiRecommendations.length > 0) { %>
+    <div class="section-card ai-card">
+        <h5><i class="fa-solid fa-lightbulb"></i> Recommendations</h5>
+        <div class="recommendations-list">
+            <% for (let rec of profile.aiRecommendations) { %>
+            <div class="recommendation-item priority-<%= rec.priority %>">
+                <div class="rec-header">
+                    <span class="rec-title"><%= rec.title %></span>
+                    <span class="rec-priority badge"><%= rec.priority %></span>
+                </div>
+                <p class="rec-description"><%= rec.description %></p>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <% } %>
+
+    <!-- AI Code Quality -->
+    <% if (profile.aiCodeQuality && profile.aiCodeQuality.overallScore) { %>
+    <div class="section-card ai-card">
+        <h5><i class="fa-solid fa-microscope"></i> Code Quality Analysis</h5>
+        <div class="quality-score">
+            <span class="quality-score-number"><%= profile.aiCodeQuality.overallScore %></span>
+            <span class="quality-score-label">/ 10</span>
+        </div>
+        <% if (profile.aiCodeQuality.strengths && profile.aiCodeQuality.strengths.length > 0) { %>
+        <div class="quality-section">
+            <h6><i class="fa-solid fa-check"></i> Strengths</h6>
+            <ul>
+                <% for (let s of profile.aiCodeQuality.strengths) { %>
+                    <li><%= s %></li>
+                <% } %>
+            </ul>
+        </div>
+        <% } %>
+        <% if (profile.aiCodeQuality.concerns && profile.aiCodeQuality.concerns.length > 0) { %>
+        <div class="quality-section">
+            <h6><i class="fa-solid fa-triangle-exclamation"></i> Areas for Improvement</h6>
+            <ul>
+                <% for (let c of profile.aiCodeQuality.concerns) { %>
+                    <li><%= c %></li>
+                <% } %>
+            </ul>
+        </div>
+        <% } %>
+        <% if (profile.aiCodeQuality.metrics && Object.keys(profile.aiCodeQuality.metrics).length > 0) { %>
+        <div class="quality-metrics">
+            <h6><i class="fa-solid fa-chart-bar"></i> Metrics</h6>
+            <div class="metrics-grid">
+                <% for (let [key, value] of Object.entries(profile.aiCodeQuality.metrics)) { %>
+                <div class="metric-item">
+                    <span class="metric-label"><%= key.replace(/([A-Z])/g, ' $1').trim() %></span>
+                    <span class="metric-value"><%= value %></span>
+                </div>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+    </div>
+    <% } %>
+</div>
+<% } %>
+
+<!-- Reports Section -->
+<hr class="my-4">
+<div class="reports-section">
+    <h4><i class="fa-solid fa-file-lines"></i> Analysis Reports</h4>
+
+    <% if (profile.reports && profile.reports.length > 0) { %>
+    <div class="reports-grid">
+        <% for (let r of profile.reports) { %>
+        <div class="report-card">
+            <div class="report-header">
+                <h5><%= r.title %></h5>
+                <span class="report-score">Score: <%= r.score %>/100</span>
+            </div>
+            <p><%= r.summary %></p>
+            <% if (r.strengths && r.strengths.length > 0) { %>
+                <div class="report-strengths">
+                    <strong>Strengths:</strong>
+                    <ul><% for (let s of r.strengths) { %><li><%= s %></li><% } %></ul>
+                </div>
+            <% } %>
+            <% if (r.weaknesses && r.weaknesses.length > 0) { %>
+                <div class="report-weaknesses">
+                    <strong>Areas to Improve:</strong>
+                    <ul><% for (let w of r.weaknesses) { %><li><%= w %></li><% } %></ul>
+                </div>
+            <% } %>
+            <small class="text-muted">
+                <% if (r.created) { %>
+                    <%= new Date(r.created).toLocaleString('en-IN', { month: 'long', year: 'numeric' }) %>
+                <% } %>
+            </small>
+        </div>
+        <% } %>
+    </div>
+    <% } %>
+
+    <!-- Add Report Form -->
+    <% if (currentUser) { %>
+    <div class="add-report-form">
+        <h5>Add a Report</h5>
+        <form action="/profile/<%= profile._id %>/reports" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="report[title]" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Summary</label>
+                <textarea name="report[summary]" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="row mb-3">
+                <div class="col">
+                    <label class="form-label">Score (1-100)</label>
+                    <input type="number" name="report[score]" class="form-control" min="1" max="100">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-dark">Add Report</button>
+        </form>
+    </div>
+    <% } %>
+</div>

@@ -1,0 +1,26 @@
+<% layout('boilerplate.ejs') %>
+
+<div class="form-wrapper">
+    <div class="form-container">
+        <h2><i class="fa-solid fa-pen"></i> Edit Profile Notes</h2>
+        <p class="text-muted">Add tags and personal notes for <strong><%= profile.username %></strong></p>
+
+        <form action="/profile/<%= profile._id %>?_method=PUT" method="POST" class="listing-form">
+            <div class="form-group">
+                <label>Tags (comma separated)</label>
+                <input type="text" name="profile[tags]" class="form-control"
+                    value="<%= profile.tags ? profile.tags.join(', ') : '' %>"
+                    placeholder="e.g. fullstack, open-source, react">
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="profile[notes]" class="form-control" rows="5"
+                    placeholder="Add your notes about this developer..."><%= profile.notes || '' %></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Update</button>
+            <a href="/profile/show/<%= profile._id %>" class="btn btn-outline-secondary ms-2">Cancel</a>
+        </form>
+    </div>
+</div>

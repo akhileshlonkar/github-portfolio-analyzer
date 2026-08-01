@@ -1,0 +1,118 @@
+<% layout('boilerplate.ejs') %>
+
+<div class="form-wrapper">
+    <div class="form-container">
+        <h2><i class="fa-solid fa-magnifying-glass"></i> Analyze a GitHub Profile</h2>
+        <p class="text-muted">Enter a GitHub username to fetch and analyze their developer portfolio.</p>
+
+        <form action="/profile" method="POST" id="analyzeForm">
+            <div class="form-group">
+                <label for="username">GitHub Username</label>
+                <div class="search-wrapper" style="max-width: 100%; margin: 0;">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa-brands fa-github"></i></span>
+                        <input type="text" name="username" id="username" class="form-control search-input" placeholder="e.g. torvalds" required autocomplete="off">
+                    </div>
+                    <div id="suggestions" class="suggestions-dropdown"></div>
+                </div>
+                <small id="profileStatus" class="form-text mt-2" style="display: none;"></small>
+            </div>
+
+            <div class="form-group">
+                <label for="profileType">Profile Type</label>
+                <select name="profileType" id="profileType" class="form-control">
+                    <option value="individual">Individual Developer</option>
+                    <option value="company">Company / Organization</option>
+                </select>
+            </div>
+
+            <button class="submit-btn" type="submit">
+                <i class="fa-solid fa-chart-simple"></i> Analyze Profile
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+const usernameInput = document.getElementById('username');
+const suggestionsDiv = document.getElementById('suggestions');
+const profileStatus = document.getElementById('profileStatus');
+const analyzeForm = document.getElementById('analyzeForm');
+let debounceTimer;
+
+usernameInput.addEventListener('input', function() {
+    clearTimeout(debounceTimer);
+    const query = this.value.trim();
+    
+    profileStatus.style.display = 'none';
+    
+    if (query.length < 1) {
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        return;
+    }
+    
+    debounceTimer = setTimeout(() => {
+        fetch(`/api/search-suggestions?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.suggestions.length === 0) {
+                    suggestionsDiv.innerHTML = '';
+                    suggestionsDiv.style.display = 'none';
+                    return;
+                }
+                
+                let html = '';
+                data.suggestions.forEach(suggestion => {
+                    if (suggestion.type === 'user') {
+                        let icon = '<i class="fa-solid fa-user"></i>';
+                        html += `<div class="suggestion-item" data-value="${suggestion.text}">
+                            <span style="color: #2da44e">${icon}</span>
+                            <span>${suggestion.text}</span>
+                            <span class="suggestion-type">already analyzed</span>
+                        </div>`;
+                    }
+                });
+                
+                if (html) {
+                    suggestionsDiv.innerHTML = html;
+                    suggestionsDiv.style.display = 'block';
+                } else {
+                    suggestionsDiv.innerHTML = '';
+                    suggestionsDiv.style.display = 'none';
+                }
+            });
+    }, 200);
+});
+
+suggestionsDiv.addEventListener('click', function(e) {
+    const item = e.target.closest('.suggestion-item');
+    if (item) {
+        const value = item.dataset.value;
+        usernameInput.value = value;
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+        
+        profileStatus.textContent = 'This profile has already been analyzed. You will be redirected to the existing profile.';
+        profileStatus.style.color = '#0969da';
+        profileStatus.style.display = 'block';
+    }
+});
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.search-wrapper')) {
+        suggestionsDiv.innerHTML = '';
+        suggestionsDiv.style.display = 'none';
+    }
+});
+
+analyzeForm.addEventListener('submit', function(e) {
+    const username = usernameInput.value.trim();
+    if (!username) {
+        e.preventDefault();
+        profileStatus.textContent = 'Please enter a GitHub username.';
+        profileStatus.style.color = '#cf222e';
+        profileStatus.style.display = 'block';
+    }
+});
+</script>
