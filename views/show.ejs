@@ -192,10 +192,12 @@
                 <i class="fa-solid fa-robot"></i> Analyze with AI
             </button>
         </form>
-        <a href="/profile/delete/<%= profile._id %>" class="btn btn-outline-danger"
-           onclick="return confirm('Delete this profile?')">
-            <i class="fa-solid fa-trash"></i> Delete
-        </a>
+        <form action="/profile/<%= profile._id %>?_method=DELETE" method="POST" style="display: inline;"
+              onsubmit="return confirm('Delete this profile?')">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="fa-solid fa-trash"></i> Delete
+            </button>
+        </form>
     </div>
 </div>
 

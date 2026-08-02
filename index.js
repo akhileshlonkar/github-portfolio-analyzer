@@ -466,10 +466,21 @@ app.put("/profile/:id", isLoggedIn, async (req, res) => {
 });
 
 // DELETE - Remove an analyzed profile
-app.get("/profile/delete/:id", isLoggedIn, async (req, res) => {
+app.delete("/profile/:id", isLoggedIn, async (req, res) => {
   const { id } = req.params;
+  const profile = await Profile.findById(id);
+  
+  if (!profile) {
+    req.flash("error", "Profile not found");
+    return res.redirect("/profile");
+  }
+  
+  // Delete associated reports
+  if (profile.reports && profile.reports.length > 0) {
+    await Report.deleteMany({ _id: { $in: profile.reports } });
+  }
+  
   await Profile.findByIdAndDelete(id);
-  await Report.deleteMany({ _id: { $in: req.body.reportIds || [] } });
   req.flash("success", "Profile deleted");
   res.redirect("/profile");
 });
