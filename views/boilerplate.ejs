@@ -13,6 +13,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
+    <!-- Page Loading Overlay -->
+    <div id="page-loader" class="page-loader">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">Loading...</p>
+        </div>
+    </div>
     <%- include("navbar.ejs") %>
     <div class="container">
         <% if (success && success.length) { %>
@@ -31,5 +38,23 @@
     </div>
     <%- include("footer.ejs") %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script>
+        (function() {
+            var loader = document.getElementById('page-loader');
+            // Fade out loader once page is fully loaded
+            window.addEventListener('pageshow', function() {
+                loader.classList.add('loaded');
+            });
+            // Show loader when any internal link is clicked
+            document.addEventListener('click', function(e) {
+                var link = e.target.closest('a');
+                if (!link) return;
+                var href = link.getAttribute('href');
+                // Skip external links, anchors, downloads, and JS-only links
+                if (!href || href.startsWith('http') || href.startsWith('javascript:') || href.startsWith('#') || href.startsWith('mailto:') || link.hasAttribute('download') || link.getAttribute('data-no-loader') !== null) return;
+                loader.classList.remove('loaded');
+            });
+        })();
+    </script>
 </body>
 </html>
