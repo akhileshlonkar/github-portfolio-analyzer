@@ -1,5 +1,33 @@
 <% layout('boilerplate.ejs') %>
 
+<style>
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    align-items: center;
+  }
+
+  .cancel-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid #8b949e;
+    color: #8b949e;
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .cancel-btn:hover {
+    background: rgba(139, 148, 158, 0.1);
+    border-color: #c9d1d9;
+    color: #c9d1d9;
+  }
+</style>
+
 <div class="form-wrapper">
     <div class="form-container">
         <h2><i class="fa-solid fa-pen"></i> Edit Profile Notes</h2>
@@ -19,8 +47,14 @@
                     placeholder="Add your notes about this developer..."><%= profile.notes || '' %></textarea>
             </div>
 
-            <button type="submit" class="submit-btn">Update</button>
-            <a href="/profile/show/<%= profile._id %>" class="btn btn-outline-secondary ms-2">Cancel</a>
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    <i class="fa-solid fa-check"></i> Update Profile
+                </button>
+                <a href="/profile/show/<%= profile._id %>" class="cancel-btn">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </a>
+            </div>
         </form>
     </div>
 </div>

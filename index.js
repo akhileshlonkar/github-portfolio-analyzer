@@ -32,6 +32,9 @@ const dburl = process.env.MONGODB_URI || "mongodb+srv://akhileshlonkar2606_db_us
 ========================= */
 const app = express();
 
+// Disable trailing-slash redirects (Express 5 redirects by default, causing slow loads)
+app.set('strict routing', true);
+
 /* =========================
    VIEW ENGINE & MIDDLEWARE
 ========================= */
@@ -97,6 +100,14 @@ const isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
     req.flash("error", "You must be logged in");
     return res.redirect("/login");
+  }
+  next();
+};
+
+const isAdmin = (req, res, next) => {
+  if (!req.user || (req.user.role !== "admin" && req.user.role !== "creator")) {
+    req.flash("error", "You don't have permission to do that");
+    return res.redirect("/profile");
   }
   next();
 };
@@ -410,6 +421,12 @@ app.post("/profile", isLoggedIn, async (req, res) => {
       analyzedBy: req.user._id,
     });
 
+    // Special coding rating for the website creator
+    if (username.toLowerCase() === "akhileshlonkar") {
+      newProfile.codingRating = 9;
+      newProfile.isCreatorProfile = true;
+    }
+
     await newProfile.save();
 
     req.flash("success", `Profile for ${username} analyzed successfully!`);
@@ -558,7 +575,10 @@ app.get("/signup", (req, res) => {
 app.post("/signup", async (req, res, next) => {
   const { username, email, password } = req.body;
 
-  const newUser = new User({ email, username });
+  // Auto-assign admin+creator role to the website creator
+  const role = (username === "akhileshlonkar") ? "admin" : "user";
+
+  const newUser = new User({ email, username, role });
   const registeredUser = await User.register(newUser, password);
 
   req.login(registeredUser, (err) => {
@@ -593,6 +613,56 @@ app.get("/logout", (req, res, next) => {
     req.flash("success", "Logged out");
     res.redirect("/profile");
   });
+});
+
+/* =========================
+   CREATOR PAGE
+========================= */
+app.get("/creator", async (req, res, next) => {
+  try {
+    const creatorUser = await User.findOne({ username: "akhileshlonkar" });
+    const totalProfiles = await Profile.countDocuments();
+    const totalUsers = await User.countDocuments();
+    res.render("creator.ejs", {
+      creatorUser,
+      totalProfiles,
+      totalUsers,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/* =========================
+   ADMIN - USER MANAGEMENT
+========================= */
+app.get("/admin/users", isLoggedIn, isAdmin, async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    res.render("admin.ejs", { users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get("/admin/user/:id/delete", isLoggedIn, isAdmin, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userToDelete = await User.findById(id);
+    if (!userToDelete) {
+      req.flash("error", "User not found");
+      return res.redirect("/admin/users");
+    }
+    if (userToDelete.username === "akhileshlonkar") {
+      req.flash("error", "Cannot delete the website creator!");
+      return res.redirect("/admin/users");
+    }
+    await User.findByIdAndDelete(id);
+    req.flash("success", `User "${userToDelete.username}" deleted successfully`);
+    res.redirect("/admin/users");
+  } catch (err) {
+    next(err);
+  }
 });
 
 /* =========================

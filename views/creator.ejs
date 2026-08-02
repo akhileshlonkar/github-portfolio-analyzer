@@ -1,0 +1,376 @@
+<% layout('boilerplate.ejs') %>
+
+<style>
+  .creator-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .creator-hero {
+    text-align: center;
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1f2937 100%);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 40px rgba(255, 215, 0, 0.15);
+  }
+
+  .creator-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(255, 215, 0, 0.05), transparent, rgba(255, 215, 0, 0.05), transparent);
+    animation: rotateBg 10s linear infinite;
+  }
+
+  @keyframes rotateBg {
+    to { transform: rotate(360deg); }
+  }
+
+  .creator-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+  }
+
+  .creator-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  }
+
+  .creator-crown {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+  }
+
+  .creator-name {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  }
+
+  .creator-title {
+    font-size: 1.2rem;
+    color: #8b949e;
+    margin-bottom: 1.5rem;
+  }
+
+  .creator-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .creator-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .badge-founder {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+  }
+
+  .badge-admin {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: #fff;
+  }
+
+  .badge-developer {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff;
+  }
+
+  .badge-verified {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #fff;
+  }
+
+  .creator-rating {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .rating-number {
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: #ffd700;
+  }
+
+  .rating-label {
+    color: #8b949e;
+    font-size: 1rem;
+  }
+
+  .rating-stars {
+    font-size: 1.8rem;
+    color: #ffd700;
+    margin: 0.5rem 0;
+  }
+
+  .creator-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .creator-stat-card {
+    background: linear-gradient(135deg, #161b22, #1f2937);
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+
+  .creator-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: #ffd700;
+  }
+
+  .creator-stat-icon {
+    font-size: 2rem;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+  }
+
+  .creator-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #f0f6fc;
+  }
+
+  .creator-stat-label {
+    color: #8b949e;
+    font-size: 0.9rem;
+  }
+
+  .creator-section {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .creator-section h3 {
+    color: #ffd700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .creator-section p {
+    color: #c9d1d9;
+    line-height: 1.7;
+  }
+
+  .tech-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .tech-badge {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: #ffd700;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .power-indicator {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(255, 215, 0, 0.1));
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .power-indicator h4 {
+    color: #fca5a5;
+    margin-bottom: 0.5rem;
+  }
+
+  .power-level {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffd700;
+  }
+
+  .power-bar {
+    height: 8px;
+    background: #30363d;
+    border-radius: 4px;
+    margin-top: 0.75rem;
+    overflow: hidden;
+  }
+
+  .power-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #ff6b00);
+    border-radius: 4px;
+    width: 100%;
+    animation: pulseBar 2s ease-in-out infinite;
+  }
+
+  @keyframes pulseBar {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+</style>
+
+<div class="creator-page">
+  <!-- Hero Section -->
+  <div class="creator-hero">
+    <div class="creator-avatar-wrapper">
+      <span class="creator-crown">👑</span>
+      <img src="https://github.com/akhileshlonkar.png" alt="Akhilesh Lonkar" class="creator-avatar"
+           onerror="this.src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'">
+    </div>
+    <h1 class="creator-name">Akhilesh Lonkar</h1>
+    <p class="creator-title">Founder & Lead Developer — GitHub Portfolio Analyzer</p>
+
+    <div class="creator-badges">
+      <span class="creator-badge badge-founder"><i class="fa-solid fa-crown"></i> Founder</span>
+      <span class="creator-badge badge-admin"><i class="fa-solid fa-shield-halved"></i> Super Admin</span>
+      <span class="creator-badge badge-developer"><i class="fa-solid fa-code"></i> Full-Stack Developer</span>
+      <span class="creator-badge badge-verified"><i class="fa-solid fa-circle-check"></i> Verified Creator</span>
+    </div>
+
+    <div class="creator-rating">
+      <div class="rating-stars">
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+        <i class="fa-solid fa-star"></i>
+      </div>
+      <div class="rating-number">100<span style="font-size: 1.5rem;">/100</span></div>
+      <div class="rating-label">Highest Rating — Website Creator</div>
+    </div>
+  </div>
+
+  <!-- Power Indicator -->
+  <div class="power-indicator">
+    <h4><i class="fa-solid fa-bolt"></i> Admin Power Level</h4>
+    <div class="power-level">MAXIMUM — Full Control</div>
+    <p style="color: #c9d1d9; margin-top: 0.5rem; font-size: 0.9rem;">
+      <i class="fa-solid fa-trash"></i> Can manage & delete users &nbsp;|&nbsp;
+      <i class="fa-solid fa-users-gear"></i> Full admin access &nbsp;|&nbsp;
+      <i class="fa-solid fa-crown"></i> Creator privileges
+    </p>
+    <div class="power-bar"><div class="power-bar-fill"></div></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="creator-stats">
+    <div class="creator-stat-card">
+      <div class="creator-stat-icon"><i class="fa-solid fa-users"></i></div>
+      <div class="creator-stat-value"><%= totalUsers %></div>
+      <div class="creator-stat-label">Total Users</div>
+    </div>
+    <div class="creator-stat-card">
+      <div class="creator-stat-icon"><i class="fa-brands fa-github"></i></div>
+      <div class="creator-stat-value"><%= totalProfiles %></div>
+      <div class="creator-stat-label">Profiles Analyzed</div>
+    </div>
+    <div class="creator-stat-card">
+      <div class="creator-stat-icon"><i class="fa-solid fa-code-branch"></i></div>
+      <div class="creator-stat-value">∞</div>
+      <div class="creator-stat-label">Contributions</div>
+    </div>
+  </div>
+
+  <!-- About Section -->
+  <div class="creator-section">
+    <h3><i class="fa-solid fa-user-astronaut"></i> About the Creator</h3>
+    <p>
+      Akhilesh Lonkar is the visionary behind GitHub Portfolio Analyzer — a platform that leverages AI to provide
+      deep insights into developer portfolios. As the sole creator and administrator, Akhilesh designed and built
+      every aspect of this platform from the ground up, including the AI analysis engine, contribution scoring system,
+      and the entire user experience.
+    </p>
+    <p style="margin-top: 1rem;">
+      With full administrative privileges, Akhilesh has the highest level of access on the platform — including
+      the ability to manage users, oversee all profiles, and shape the future of the project.
+    </p>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="creator-section">
+    <h3><i class="fa-solid fa-layer-group"></i> Tech Stack</h3>
+    <p>Built with modern web technologies:</p>
+    <div class="tech-stack">
+      <span class="tech-badge">Node.js</span>
+      <span class="tech-badge">Express.js</span>
+      <span class="tech-badge">MongoDB</span>
+      <span class="tech-badge">EJS</span>
+      <span class="tech-badge">Passport.js</span>
+      <span class="tech-badge">Bootstrap 5</span>
+      <span class="tech-badge">GitHub API</span>
+      <span class="tech-badge">AI/ML Analysis</span>
+    </div>
+  </div>
+
+  <!-- Special Privileges -->
+  <div class="creator-section">
+    <h3><i class="fa-solid fa-key"></i> Special Privileges</h3>
+    <p>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>Super Admin Access</strong> — Full control over all platform features<br>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>User Management</strong> — View, manage, and delete any user account<br>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>Creator Status</strong> — Recognized as the founder and builder of the platform<br>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>Highest Rating</strong> — 100/100 contribution score (maximum possible)<br>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>Protected Account</strong> — Cannot be deleted by any other admin<br>
+      <i class="fa-solid fa-check" style="color: #2da44e;"></i> <strong>AI Analysis</strong> — Unlimited access to all AI-powered features
+    </p>
+  </div>
+
+  <div style="text-align: center; margin-top: 2rem;">
+    <a href="/profile" class="btn btn-outline-light btn-lg me-2">
+      <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    </a>
+    <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'creator')) { %>
+    <a href="/admin/users" class="btn btn-outline-warning btn-lg">
+      <i class="fa-solid fa-users-gear"></i> Admin Panel
+    </a>
+    <% } %>
+  </div>
+</div>

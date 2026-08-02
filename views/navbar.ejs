@@ -1,35 +1,62 @@
-<nav class="navbar navbar-expand-lg sticky-top">
+<nav class="navbar navbar-expand-lg sticky-top custom-navbar">
   <div class="container-fluid">
     <a class="navbar-brand" href="/profile">
       <i class="fa-brands fa-github"></i> Portfolio Analyzer
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-      data-bs-target="#navbarSupportedContent"
-      style="border-color: var(--border-color);">
+      data-bs-target="#navbarSupportedContent">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" href="/profile">Dashboard</a>
+          <a class="nav-link nav-pill" href="/profile">
+            <i class="fa-solid fa-gauge-high"></i> Dashboard
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/profile/new">Analyze</a>
+          <a class="nav-link nav-pill" href="/profile/new">
+            <i class="fa-solid fa-magnifying-glass-chart"></i> Analyze
+          </a>
         </li>
       </ul>
 
-      <% if (!currentUser) { %>
-        <a href="/login" class="btn btn-outline-dark me-2">Sign in</a>
-        <a href="/signup" class="btn btn-dark">Sign up</a>
-      <% } %>
-      <% if (currentUser) { %>
-        <span class="navbar-text me-3">
-          <i class="fa-solid fa-user"></i> <%= currentUser.username %>
-        </span>
-        <a href="/logout" class="btn btn-outline-danger">Logout</a>
-      <% } %>
+      <div class="navbar-actions">
+        <% if (!currentUser) { %>
+          <a href="/login" class="btn btn-signin">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign in
+          </a>
+          <a href="/signup" class="btn btn-signup">Sign up</a>
+        <% } %>
+        <% if (currentUser) { %>
+          <% if (currentUser.role === 'admin' || currentUser.role === 'creator') { %>
+            <a class="nav-link nav-pill" href="/admin/users">
+              <i class="fa-solid fa-users-gear"></i> Admin
+            </a>
+          <% } %>
+          <a class="nav-link nav-pill" href="/creator">
+            <i class="fa-solid fa-crown"></i> Creator
+          </a>
+          <div class="navbar-user">
+            <div class="user-avatar"><%= currentUser.username.charAt(0).toUpperCase() %></div>
+            <div class="user-info">
+              <span class="user-name"><%= currentUser.username %></span>
+              <% if (currentUser.role === 'admin') { %>
+                <span class="user-role-badge admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+              <% } else if (currentUser.role === 'creator') { %>
+                <span class="user-role-badge creator"><i class="fa-solid fa-crown"></i> Creator</span>
+              <% } else { %>
+                <span class="user-role-badge">User</span>
+              <% } %>
+            </div>
+          </div>
+          <a href="/logout" class="btn btn-logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        <% } %>
+      </div>
     </div>
   </div>
 </nav>

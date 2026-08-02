@@ -132,6 +132,17 @@ const profileSchema = new mongoose.Schema({
   aiAnalyzedAt: {
     type: Date,
   },
+
+  // Special coding rating for the creator
+  codingRating: {
+    type: Number,
+    default: 0,
+  },
+
+  isCreatorProfile: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 module.exports = mongoose.model("Profile", profileSchema);

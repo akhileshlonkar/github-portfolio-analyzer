@@ -1,0 +1,241 @@
+<% layout('boilerplate.ejs') %>
+
+<style>
+  .admin-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .admin-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 800;
+  }
+
+  .admin-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .admin-stat {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 1rem 1.5rem;
+    flex: 1;
+    min-width: 150px;
+    text-align: center;
+  }
+
+  .admin-stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #ffd700;
+  }
+
+  .admin-stat-label {
+    color: #8b949e;
+    font-size: 0.85rem;
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #161b22;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+  }
+
+  .users-table thead {
+    background: #1f2937;
+  }
+
+  .users-table th {
+    padding: 1rem;
+    text-align: left;
+    color: #ffd700;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .users-table td {
+    padding: 0.85rem 1rem;
+    border-top: 1px solid #21262d;
+    color: #c9d1d9;
+    vertical-align: middle;
+  }
+
+  .users-table tr:hover {
+    background: rgba(255, 215, 0, 0.03);
+  }
+
+  .user-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .role-admin {
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    color: #fff;
+  }
+
+  .role-creator {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+  }
+
+  .role-user {
+    background: #30363d;
+    color: #8b949e;
+  }
+
+  .protected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(45, 164, 78, 0.15);
+    color: #2da44e;
+    border: 1px solid rgba(45, 164, 78, 0.3);
+  }
+
+  .btn-delete-user {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid #f85149;
+    color: #f85149;
+    background: transparent;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  .btn-delete-user:hover {
+    background: #f85149;
+    color: #fff;
+  }
+
+  .btn-delete-user.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .creator-highlight {
+    background: rgba(255, 215, 0, 0.05) !important;
+    border-left: 3px solid #ffd700;
+  }
+
+  @media (max-width: 768px) {
+    .users-table {
+      font-size: 0.85rem;
+    }
+    .users-table th, .users-table td {
+      padding: 0.6rem 0.5rem;
+    }
+  }
+</style>
+
+<div class="admin-page">
+  <div class="admin-header">
+    <h2><i class="fa-solid fa-users-gear"></i> Admin Panel — User Management</h2>
+    <a href="/creator" class="btn btn-outline-warning">
+      <i class="fa-solid fa-crown"></i> Creator Page
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="admin-stats">
+    <div class="admin-stat">
+      <div class="admin-stat-value"><%= users.length %></div>
+      <div class="admin-stat-label">Total Users</div>
+    </div>
+    <div class="admin-stat">
+      <div class="admin-stat-value"><%= users.filter(u => u.role === 'admin').length %></div>
+      <div class="admin-stat-label">Admins</div>
+    </div>
+    <div class="admin-stat">
+      <div class="admin-stat-value"><%= users.filter(u => u.role === 'user').length %></div>
+      <div class="admin-stat-label">Regular Users</div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(function(user, index) { %>
+      <tr class="<%= user.username === 'akhileshlonkar' ? 'creator-highlight' : '' %>">
+        <td><%= index + 1 %></td>
+        <td>
+          <strong><%= user.username %></strong>
+          <% if (user.username === 'akhileshlonkar') { %>
+            <span style="color: #ffd700; margin-left: 0.3rem;">👑</span>
+          <% } %>
+        </td>
+        <td><%= user.email %></td>
+        <td>
+          <% if (user.role === 'admin') { %>
+            <span class="user-role-badge role-admin"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+          <% } else if (user.role === 'creator') { %>
+            <span class="user-role-badge role-creator"><i class="fa-solid fa-crown"></i> Creator</span>
+          <% } else { %>
+            <span class="user-role-badge role-user"><i class="fa-solid fa-user"></i> User</span>
+          <% } %>
+        </td>
+        <td>
+          <% if (user.username === 'akhileshlonkar') { %>
+            <span class="protected-badge"><i class="fa-solid fa-lock"></i> Protected</span>
+          <% } else { %>
+            <span style="color: #8b949e;">—</span>
+          <% } %>
+        </td>
+        <td>
+          <% if (user.username === 'akhileshlonkar') { %>
+            <span class="btn-delete-user disabled"><i class="fa-solid fa-lock"></i> Cannot Delete</span>
+          <% } else { %>
+            <a href="/admin/user/<%= user._id %>/delete" class="btn-delete-user"
+               onclick="return confirm('Are you sure you want to delete user &quot;<%= user.username %>&quot;? This cannot be undone.')">
+              <i class="fa-solid fa-trash"></i> Delete
+            </a>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

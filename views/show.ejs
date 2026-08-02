@@ -1,5 +1,59 @@
 <% layout('boilerplate.ejs') %>
 
+<style>
+  .creator-crown-badge {
+    font-size: 1.5rem;
+    vertical-align: middle;
+    margin-left: 0.3rem;
+  }
+
+  .creator-coding-rating {
+    background: linear-gradient(135deg, #0d1117, #161b22);
+    border: 2px solid #ffd700;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    min-width: 180px;
+  }
+
+  .coding-rating-label {
+    font-size: 0.85rem;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.3rem;
+  }
+
+  .coding-rating-value {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #ffd700;
+    line-height: 1;
+  }
+
+  .coding-rating-value span {
+    font-size: 1.2rem;
+    color: #8b949e;
+  }
+
+  .coding-rating-stars {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+
+  .creator-badge-label {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    display: inline-block;
+  }
+</style>
+
 <div class="profile-details">
     <!-- Navigation Buttons -->
     <div class="detail-nav-buttons">
@@ -15,12 +69,29 @@
     <div class="profile-header-card">
         <img src="<%= profile.avatar %>" alt="<%= profile.username %>" class="profile-avatar">
         <div class="profile-info">
-            <h2><%= profile.username %></h2>
+            <h2>
+                <%= profile.username %>
+                <% if (profile.isCreatorProfile) { %>
+                    <span class="creator-crown-badge">👑</span>
+                <% } %>
+            </h2>
             <p class="bio"><%= profile.bio || 'No bio available' %></p>
             <a href="<%= profile.profileUrl %>" target="_blank" class="btn btn-sm btn-outline-dark">
                 <i class="fa-brands fa-github"></i> View on GitHub
             </a>
         </div>
+        <% if (profile.isCreatorProfile && profile.codingRating) { %>
+            <div class="creator-coding-rating">
+                <div class="coding-rating-label">Coding</div>
+                <div class="coding-rating-value"><%= profile.codingRating %><span>/10</span></div>
+                <div class="coding-rating-stars">
+                    <% for (let i = 1; i <= 10; i++) { %>
+                        <i class="fa-solid fa-star" style="color: <%= i <= profile.codingRating ? '#ffd700' : '#30363d' %>"></i>
+                    <% } %>
+                </div>
+                <div class="creator-badge-label"><i class="fa-solid fa-crown"></i> Website Creator</div>
+            </div>
+        <% } %>
     </div>
 
     <!-- Stats Grid -->

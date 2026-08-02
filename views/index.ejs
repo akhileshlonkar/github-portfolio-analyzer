@@ -35,14 +35,14 @@
 
 <!-- Filter Panel -->
 <div class="filter-panel">
-    <div class="filter-header">
+    <div class="filter-header" id="filterToggle">
         <h3><i class="fa-solid fa-filter"></i> Filters</h3>
-        <button class="btn btn-sm btn-outline-secondary" id="toggleFilters">
-            <i class="fa-solid fa-chevron-down"></i>
+        <button class="btn btn-sm btn-outline-secondary">
+            <i class="fa-solid fa-chevron-down" id="filterIcon"></i>
         </button>
     </div>
     
-    <div class="filter-content" id="filterContent">
+    <div class="filter-content collapsed" id="filterContent">
         <form method="GET" action="/profile" class="filter-form">
             <% if (search) { %>
                 <input type="hidden" name="search" value="<%= search %>">
@@ -209,6 +209,25 @@ searchInput.addEventListener('keypress', function(e) {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+.creator-mini-badge {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+}
+
+.creator-mini-badge .coding-score {
+    margin-left: 0.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
 </style>
 
 <div class="profile-grid">
@@ -253,6 +272,12 @@ searchInput.addEventListener('keypress', function(e) {
                 <span class="stat-label">Followers</span>
             </div>
         </div>
+
+        <% if (p.isCreatorProfile && p.codingRating) { %>
+        <div class="creator-mini-badge">
+            <i class="fa-solid fa-crown"></i> Creator <span class="coding-score">Coding: <%= p.codingRating %>/10</span>
+        </div>
+        <% } %>
 
         <div class="score-badges-row">
             <div class="score-badge">
@@ -359,15 +384,22 @@ async function predictAI(btn, profileId) {
     }
 }
 
-// Filter panel toggle
-const toggleBtn = document.getElementById('toggleFilters');
-const filterContent = document.getElementById('filterContent');
 
-if (toggleBtn && filterContent) {
-    toggleBtn.addEventListener('click', function() {
+// Filter panel toggle
+const filterToggle = document.getElementById('filterToggle');
+const filterContent = document.getElementById('filterContent');
+const filterIcon = document.getElementById('filterIcon');
+
+if (filterToggle && filterContent) {
+    filterToggle.addEventListener('click', function() {
         filterContent.classList.toggle('collapsed');
-        this.querySelector('i').classList.toggle('fa-chevron-down');
-        this.querySelector('i').classList.toggle('fa-chevron-up');
+        if (filterContent.classList.contains('collapsed')) {
+            filterIcon.classList.remove('fa-chevron-up');
+            filterIcon.classList.add('fa-chevron-down');
+        } else {
+            filterIcon.classList.remove('fa-chevron-down');
+            filterIcon.classList.add('fa-chevron-up');
+        }
     });
 }
 
